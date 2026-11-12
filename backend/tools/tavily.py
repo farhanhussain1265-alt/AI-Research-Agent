@@ -1,0 +1,27 @@
+from typing import List,Dict
+import os 
+from dotenv import load_dotenv
+
+
+
+def _tavily_search(query:str,max_results:int=5)->List[dict]:
+    if not os.get_env("TAVILY_API_KEY"):
+        return []
+    try:
+        from langchain_community.tools.tavily_search import TavilySearchResults
+        tool=TavilySearchResults(max_results=max_results)
+        results=tool.invoke({"query":query})
+        out:List[dict]=[]
+        for r in results or []:
+            out.append(
+                {
+                    "title":r.get("title") or "",
+                    "url":r.get("url") or "",
+                    "snippet":r.get("content") or r.get("snippet") or "",
+                    "published_at":r.get("published_date") or r.get("published_at"),
+                    "source":r.get("source")
+                }
+            )
+        return out
+    except Exception:
+        return []
